@@ -24,29 +24,68 @@ const EditorStepItems: React.FC<Props> = ({ invoice, updateItem, addItem, remove
     }
   };
 
+  const inputClasses = "w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all";
+
   return (
-    <div className="bg-white rounded-[2rem] border border-slate-100 p-8 shadow-sm">
+    <div className="bg-white dark:bg-slate-900 rounded-[2rem] border border-slate-100 dark:border-slate-800 p-8 shadow-sm transition-colors">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-          <ListOrdered className="w-5 h-5 text-indigo-600" /> Articles
+        <h2 className="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+          <ListOrdered className="w-5 h-5 text-indigo-600" /> Articles & Services
         </h2>
-        <button onClick={handleSuggest} disabled={loading} className="flex items-center gap-2 text-indigo-600 bg-indigo-50 px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-100 transition-all">
-          {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} IA Suggest
+        <button onClick={handleSuggest} disabled={loading} className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all border border-indigo-100 dark:border-indigo-900/50">
+          {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Suggestions IA
         </button>
       </div>
+      
       <div className="space-y-4">
+        {invoice.items.length > 0 ? (
+          <div className="grid grid-cols-12 gap-2 mb-2 px-1 hidden sm:grid">
+            <span className="col-span-6 text-[10px] font-black text-slate-400 uppercase">Description</span>
+            <span className="col-span-2 text-[10px] font-black text-slate-400 uppercase text-center">Qté</span>
+            <span className="col-span-3 text-[10px] font-black text-slate-400 uppercase text-right">Prix Unitaire</span>
+          </div>
+        ) : null}
+
         {invoice.items.map(item => (
-          <div key={item.id} className="bg-slate-50 p-5 rounded-2xl border border-slate-100">
-            <div className="grid grid-cols-12 gap-4">
-              <input className="col-span-7 bg-transparent font-bold text-slate-900 text-sm focus:ring-0 border-none p-0" value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} />
-              <input type="number" className="col-span-2 bg-transparent text-center font-bold text-sm focus:ring-0 border-none p-0" value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value))} />
-              <input type="number" className="col-span-2 bg-transparent text-right font-bold text-sm focus:ring-0 border-none p-0" value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value))} />
-              <button onClick={() => removeItem(item.id)} className="col-span-1 flex justify-end text-slate-400 hover:text-red-500"><Trash2 className="w-4 h-4" /></button>
+          <div key={item.id} className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800 group transition-all">
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+              <div className="sm:col-span-6">
+                <input 
+                  className={inputClasses} 
+                  value={item.description} 
+                  onChange={(e) => updateItem(item.id, 'description', e.target.value)} 
+                  placeholder="Description du service..."
+                />
+              </div>
+              <div className="grid grid-cols-3 sm:col-span-6 gap-2">
+                <div className="col-span-1">
+                  <input 
+                    type="number" 
+                    className={`${inputClasses} text-center`}
+                    value={item.quantity} 
+                    onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} 
+                  />
+                </div>
+                <div className="col-span-1">
+                  <input 
+                    type="number" 
+                    className={`${inputClasses} text-right`}
+                    value={item.rate} 
+                    onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} 
+                  />
+                </div>
+                <div className="col-span-1 flex justify-end items-center">
+                  <button onClick={() => removeItem(item.id)} className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         ))}
-        <button onClick={() => addItem()} className="w-full py-4 border-2 border-dashed border-slate-200 rounded-2xl text-slate-500 text-sm font-bold hover:border-indigo-400 hover:text-indigo-600 transition-all flex items-center justify-center gap-2">
-          <Plus className="w-4 h-4" /> Ajouter un article
+        
+        <button onClick={() => addItem()} className="w-full py-5 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 text-sm font-bold hover:border-indigo-400 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-900/50">
+          <Plus className="w-4 h-4" /> Ajouter un nouvel article
         </button>
       </div>
     </div>
