@@ -18,6 +18,12 @@ export interface LineItem {
   rate: number;
 }
 
+export interface CatalogItem {
+  id: string;
+  description: string;
+  rate: number;
+}
+
 export interface InvoiceTheme {
   id: string;
   name: string;

@@ -1,24 +1,25 @@
 
 import { useState, useEffect } from 'react';
-import { CompanyDetails, InvoiceData, DEFAULT_INVOICE, DEFAULT_SENDER, LineItem, InvoiceTemplate } from '../types';
+import { CompanyDetails, InvoiceData, DEFAULT_INVOICE, DEFAULT_SENDER, LineItem, InvoiceTemplate, CatalogItem } from '../types';
 
 export function useInvoiceState() {
   const [profiles, setProfiles] = useState<CompanyDetails[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string>('');
   const [invoice, setInvoice] = useState<InvoiceData>(DEFAULT_INVOICE);
   const [templates, setTemplates] = useState<InvoiceTemplate[]>([]);
+  const [catalog, setCatalog] = useState<CatalogItem[]>([]);
 
   useEffect(() => {
     const savedProfiles = localStorage.getItem('devisflow_profiles');
     const savedDraft = localStorage.getItem('devisflow_current_invoice');
     const savedTemplates = localStorage.getItem('devisflow_templates');
+    const savedCatalog = localStorage.getItem('devisflow_catalog');
     
     const initialProfiles = savedProfiles ? JSON.parse(savedProfiles) : [DEFAULT_SENDER];
     setProfiles(initialProfiles);
 
-    if (savedTemplates) {
-      setTemplates(JSON.parse(savedTemplates));
-    }
+    if (savedTemplates) setTemplates(JSON.parse(savedTemplates));
+    if (savedCatalog) setCatalog(JSON.parse(savedCatalog));
     
     if (savedDraft) {
       const parsed = JSON.parse(savedDraft);
@@ -36,7 +37,10 @@ export function useInvoiceState() {
     if (templates.length > 0 || localStorage.getItem('devisflow_templates')) {
         localStorage.setItem('devisflow_templates', JSON.stringify(templates));
     }
-  }, [profiles, invoice, templates]);
+    if (catalog.length > 0 || localStorage.getItem('devisflow_catalog')) {
+        localStorage.setItem('devisflow_catalog', JSON.stringify(catalog));
+    }
+  }, [profiles, invoice, templates, catalog]);
 
   const updateSender = (field: string, value: any) => {
     setInvoice(prev => {
@@ -147,10 +151,27 @@ export function useInvoiceState() {
      }
   };
 
+  const addCatalogItem = (item: Omit<CatalogItem, 'id'>) => {
+    const newItem: CatalogItem = {
+      id: `cat-${Date.now()}`,
+      ...item,
+    };
+    setCatalog(prev => [...prev, newItem]);
+  };
+
+  const updateCatalogItem = (id: string, updates: Partial<CatalogItem>) => {
+    setCatalog(prev => prev.map(item => item.id === id ? { ...item, ...updates } : item));
+  };
+
+  const deleteCatalogItem = (id: string) => {
+    setCatalog(prev => prev.filter(item => item.id !== id));
+  };
+
   return { 
-    invoice, setInvoice, profiles, activeProfileId, templates,
+    invoice, setInvoice, profiles, activeProfileId, templates, catalog,
     updateSender, updateReceiver, addItem, updateItem, removeItem, 
     switchProfile, addNewProfile, duplicateProfile, deleteProfile, resetInvoice,
-    saveAsTemplate, applyTemplate, deleteTemplate
+    saveAsTemplate, applyTemplate, deleteTemplate,
+    addCatalogItem, updateCatalogItem, deleteCatalogItem
   };
 }

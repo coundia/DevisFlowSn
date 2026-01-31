@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Eye, Building2, User, ListOrdered, FileCheck, RefreshCw, ChevronRight, Moon, Sun, Loader2, CheckCircle2, WifiOff } from 'lucide-react';
+import { FileText, Download, Eye, Building2, User, ListOrdered, FileCheck, RefreshCw, ChevronRight, Moon, Sun, Loader2, CheckCircle2, WifiOff, Bookmark } from 'lucide-react';
 import { useInvoiceState } from './hooks/useInvoiceState';
 import { calculateTotal } from './utils/invoiceUtils';
 import InvoicePreview from './components/InvoicePreview';
@@ -9,13 +9,15 @@ import EditorStepClient from './components/EditorStepClient';
 import EditorStepItems from './components/EditorStepItems';
 import EditorStepFinalize from './components/EditorStepFinalize';
 import ChatAssistant from './components/ChatAssistant';
+import EditorStepCatalog from './components/EditorStepCatalog';
 
 const App: React.FC = () => {
   const { 
-    invoice, setInvoice, profiles, activeProfileId, templates,
+    invoice, setInvoice, profiles, activeProfileId, templates, catalog,
     updateSender, updateReceiver, addItem, updateItem, removeItem, 
     switchProfile, addNewProfile, duplicateProfile, deleteProfile, resetInvoice,
-    saveAsTemplate, applyTemplate, deleteTemplate
+    saveAsTemplate, applyTemplate, deleteTemplate,
+    addCatalogItem, updateCatalogItem, deleteCatalogItem
   } = useInvoiceState();
   
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
@@ -96,8 +98,9 @@ const App: React.FC = () => {
   const steps = [
     { id: 0, label: 'Société', icon: Building2 },
     { id: 1, label: 'Client', icon: User },
-    { id: 2, label: 'Articles', icon: ListOrdered },
-    { id: 3, label: 'Finaliser', icon: FileCheck },
+    { id: 2, label: 'Catalogue', icon: Bookmark },
+    { id: 3, label: 'Articles', icon: ListOrdered },
+    { id: 4, label: 'Finaliser', icon: FileCheck },
   ];
 
   return (
@@ -191,8 +194,9 @@ const App: React.FC = () => {
           <div className="transition-all duration-300">
             {activeStep === 0 && <EditorStepCompany sender={invoice.sender} profiles={profiles} activeProfileId={activeProfileId} onUpdate={updateSender} onSwitch={switchProfile} onAdd={addNewProfile} onDuplicate={duplicateProfile} onDelete={deleteProfile} />}
             {activeStep === 1 && <EditorStepClient receiver={invoice.receiver} invoiceNumber={invoice.invoiceNumber} dueDate={invoice.dueDate} onUpdateReceiver={updateReceiver} onUpdateInvoice={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} />}
-            {activeStep === 2 && <EditorStepItems invoice={invoice} updateItem={updateItem} addItem={addItem} removeItem={removeItem} />}
-            {activeStep === 3 && <EditorStepFinalize invoice={invoice} onUpdate={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} templates={templates} onSaveTemplate={saveAsTemplate} onApplyTemplate={handleApplyTemplate} onDeleteTemplate={deleteTemplate} />}
+            {activeStep === 2 && <EditorStepCatalog catalog={catalog} onAdd={addCatalogItem} onUpdate={updateCatalogItem} onDelete={deleteCatalogItem} />}
+            {activeStep === 3 && <EditorStepItems invoice={invoice} updateItem={updateItem} addItem={addItem} removeItem={removeItem} catalog={catalog} />}
+            {activeStep === 4 && <EditorStepFinalize invoice={invoice} onUpdate={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} templates={templates} onSaveTemplate={saveAsTemplate} onApplyTemplate={handleApplyTemplate} onDeleteTemplate={deleteTemplate} />}
           </div>
           
           <div className="flex justify-between items-center pt-6 no-print">
@@ -210,10 +214,10 @@ const App: React.FC = () => {
                </div>
                <div className="w-px h-10 bg-white/10" />
                <button 
-                 onClick={() => activeStep < 3 ? setActiveStep(p => p + 1) : setActiveTab('preview')} 
+                 onClick={() => activeStep < 4 ? setActiveStep(p => p + 1) : setActiveTab('preview')} 
                  className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 hover:text-indigo-400 transition-all active:scale-90"
                >
-                 {activeStep < 3 ? 'Suivant' : 'Vérifier'} <ChevronRight className="w-4 h-4" />
+                 {activeStep < 4 ? 'Suivant' : 'Vérifier'} <ChevronRight className="w-4 h-4" />
                </button>
             </div>
           </div>

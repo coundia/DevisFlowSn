@@ -1,19 +1,32 @@
 
-import React, { useState } from 'react';
-import { Plus, Trash2, ListOrdered, Sparkles, RefreshCw, Check, X } from 'lucide-react';
-import { InvoiceData } from '../types';
+import React, { useState, useRef, useEffect } from 'react';
+import { Plus, Trash2, ListOrdered, Sparkles, RefreshCw, Check, X, Bookmark, ChevronDown } from 'lucide-react';
+import { InvoiceData, CatalogItem } from '../types';
 import { getAiSuggestions } from '../services/aiService';
 
 interface Props {
   invoice: InvoiceData;
+  catalog: CatalogItem[];
   updateItem: (id: string, field: any, value: any) => void;
   addItem: (item?: any) => void;
   removeItem: (id: string) => void;
 }
 
-const EditorStepItems: React.FC<Props> = ({ invoice, updateItem, addItem, removeItem }) => {
+const EditorStepItems: React.FC<Props> = ({ invoice, catalog, updateItem, addItem, removeItem }) => {
   const [loading, setLoading] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [isCatalogOpen, setIsCatalogOpen] = useState(false);
+  const catalogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (catalogRef.current && !catalogRef.current.contains(event.target as Node)) {
+        setIsCatalogOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [catalogRef]);
 
   const handleSuggest = async () => {
     setLoading(true);
@@ -24,6 +37,11 @@ const EditorStepItems: React.FC<Props> = ({ invoice, updateItem, addItem, remove
       setLoading(false);
     }
   };
+
+  const handleSelectCatalogItem = (item: CatalogItem) => {
+    addItem({ description: item.description, rate: item.rate });
+    setIsCatalogOpen(false);
+  }
 
   const inputClasses = "w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all";
   const labelClasses = "text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] block";
@@ -86,12 +104,39 @@ const EditorStepItems: React.FC<Props> = ({ invoice, updateItem, addItem, remove
           </div>
         ))}
         
-        <button 
-          onClick={() => addItem()} 
-          className="w-full py-5 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 text-sm font-bold hover:border-indigo-400 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-900/50"
-        >
-          <Plus className="w-4 h-4" /> Ajouter un Article
-        </button>
+        <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+          <button 
+            onClick={() => addItem()} 
+            className="flex-1 py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 text-sm font-bold hover:border-indigo-400 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-900/50"
+          >
+            <Plus className="w-4 h-4" /> Ajouter une Ligne
+          </button>
+          <div className="relative flex-1" ref={catalogRef}>
+             <button 
+                onClick={() => setIsCatalogOpen(p => !p)} 
+                className="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 text-sm font-bold hover:border-indigo-400 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-900/50"
+            >
+                <Bookmark className="w-4 h-4" /> Ajouter du Catalogue <ChevronDown className={`w-4 h-4 transition-transform ${isCatalogOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {isCatalogOpen && (
+                <div className="absolute bottom-full right-0 mb-2 w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border dark:border-slate-700 z-10 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
+                    <div className="p-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase text-center border-b dark:border-slate-700">Sélectionner un article</div>
+                    <div className="max-h-60 overflow-y-auto">
+                      {catalog.length > 0 ? (
+                        catalog.map(item => (
+                            <button key={item.id} onClick={() => handleSelectCatalogItem(item)} className="w-full text-left flex justify-between items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                                <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{item.description}</span>
+                                <span className="text-xs font-bold text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-2 py-1 rounded-md">{item.rate.toLocaleString()}</span>
+                            </button>
+                        ))
+                      ) : (
+                        <p className="text-center text-xs text-slate-400 py-6">Votre catalogue est vide. Ajoutez des articles dans l'onglet "Catalogue".</p>
+                      )}
+                    </div>
+                </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
