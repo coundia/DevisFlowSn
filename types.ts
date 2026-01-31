@@ -26,11 +26,11 @@ export interface InvoiceTheme {
 }
 
 export const INVOICE_THEMES: InvoiceTheme[] = [
-  { id: 'professional', name: 'Professional', primary: '#0f172a', accent: '#4f46e5' }, // Slate & Indigo
-  { id: 'modern-blue', name: 'Modern Blue', primary: '#1e40af', accent: '#3b82f6' }, // Blue
-  { id: 'emerald', name: 'Emerald', primary: '#064e3b', accent: '#10b981' }, // Green
-  { id: 'ruby', name: 'Ruby', primary: '#9f1239', accent: '#f43f5e' }, // Rose
-  { id: 'midnight', name: 'Midnight', primary: '#18181b', accent: '#71717a' }, // Zinc
+  { id: 'professional', name: 'Elite Slate', primary: '#0f172a', accent: '#6366f1' }, 
+  { id: 'modern-blue', name: 'Azure Tide', primary: '#1e3a8a', accent: '#3b82f6' }, 
+  { id: 'emerald', name: 'Forest Mint', primary: '#064e3b', accent: '#10b981' }, 
+  { id: 'ruby', name: 'Velvet Rose', primary: '#881337', accent: '#f43f5e' }, 
+  { id: 'midnight', name: 'Onyx Noir', primary: '#09090b', accent: '#71717a' },
 ];
 
 export interface InvoiceData {

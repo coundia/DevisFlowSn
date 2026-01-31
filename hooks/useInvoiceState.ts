@@ -77,6 +77,22 @@ export function useInvoiceState() {
     setInvoice(prev => ({ ...prev, sender: newProfile }));
   };
 
+  const duplicateProfile = (id: string) => {
+    const profileToClone = profiles.find(p => p.id === id);
+    if (!profileToClone) return;
+
+    const newId = Math.random().toString(36).substr(2, 9);
+    const clonedProfile = { 
+      ...profileToClone, 
+      id: newId, 
+      name: `${profileToClone.name} (Copie)` 
+    };
+    
+    setProfiles(prev => [...prev, clonedProfile]);
+    setActiveProfileId(newId);
+    setInvoice(prev => ({ ...prev, sender: clonedProfile }));
+  };
+
   const deleteProfile = (id: string) => {
     if (profiles.length <= 1) return;
     const filtered = profiles.filter(p => p.id !== id);
@@ -96,6 +112,6 @@ export function useInvoiceState() {
   return { 
     invoice, setInvoice, profiles, activeProfileId, 
     updateSender, updateReceiver, addItem, updateItem, removeItem, 
-    switchProfile, addNewProfile, deleteProfile, resetInvoice 
+    switchProfile, addNewProfile, duplicateProfile, deleteProfile, resetInvoice 
   };
 }
