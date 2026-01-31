@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Eye, Building2, User, ListOrdered, FileCheck, RefreshCw, ChevronRight, Moon, Sun, Loader2 } from 'lucide-react';
+import { FileText, Download, Eye, Building2, User, ListOrdered, FileCheck, RefreshCw, ChevronRight, Moon, Sun, Loader2, CheckCircle2 } from 'lucide-react';
 import { useInvoiceState } from './hooks/useInvoiceState';
 import { calculateTotal } from './utils/invoiceUtils';
 import InvoicePreview from './components/InvoicePreview';
@@ -21,6 +21,27 @@ const App: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
   const [isDownloading, setIsDownloading] = useState(false);
+  const [lastSaved, setLastSaved] = useState<Date>(new Date());
+
+  // Protection contre la fermeture de l'onglet (Confirmation de départ)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // On affiche l'alerte si l'utilisateur a commencé à remplir la facture
+      // (par exemple s'il y a plus d'un item ou si le nom du client n'est plus par défaut)
+      if (invoice.items.length > 0 || invoice.receiver.name !== 'Nom du Client') {
+        e.preventDefault();
+        e.returnValue = ''; // Requis par Chrome
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [invoice]);
+
+  // Effet pour mettre à jour l'indicateur de sauvegarde
+  useEffect(() => {
+    setLastSaved(new Date());
+  }, [invoice]);
 
   useEffect(() => {
     localStorage.setItem('theme', isDark ? 'dark' : 'light');
@@ -55,7 +76,6 @@ const App: React.FC = () => {
       await html2pdf().from(element).set(opt).save();
     } catch (error) {
       console.error('PDF Generation failed:', error);
-      // Fallback to window.print if html2pdf fails
       window.print();
     } finally {
       setIsDownloading(false);
@@ -83,6 +103,14 @@ const App: React.FC = () => {
         </div>
         
         <div className="flex items-center gap-4">
+          {/* Indicateur de sauvegarde automatique */}
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800/50 rounded-lg border dark:border-slate-700">
+            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
+              Sauvegardé à {lastSaved.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </div>
+
           <button 
             onClick={() => setIsDark(!isDark)}
             className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all border border-transparent dark:border-slate-700"
@@ -108,7 +136,6 @@ const App: React.FC = () => {
       </header>
 
       <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 relative">
-        {/* Navigation Sidebar */}
         <aside className="lg:col-span-1 hidden lg:flex flex-col gap-4 sticky top-32 no-print h-fit">
           {steps.map(s => (
             <button 
@@ -132,7 +159,6 @@ const App: React.FC = () => {
           </button>
         </aside>
 
-        {/* Editor Column */}
         <section className={`lg:col-span-5 space-y-6 ${activeTab === 'preview' ? 'hidden' : 'animate-in fade-in slide-in-from-bottom-2'}`}>
           <div className="lg:hidden flex overflow-x-auto gap-2 pb-2 scrollbar-hide no-print mb-4">
             {steps.map(s => (
@@ -183,7 +209,6 @@ const App: React.FC = () => {
             )}
           </div>
           
-          {/* Navigation Controls */}
           <div className="flex justify-between items-center pt-4 no-print">
             <button 
               disabled={activeStep === 0} 
@@ -208,7 +233,6 @@ const App: React.FC = () => {
           </div>
         </section>
 
-        {/* Preview Column */}
         <section className={`lg:col-span-6 sticky top-28 h-fit ${activeTab === 'preview' ? 'block' : 'hidden lg:block'}`}>
            <div className="bg-white dark:bg-slate-900 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.1)] overflow-hidden border border-slate-100 dark:border-slate-800 ring-1 ring-slate-100 dark:ring-slate-800">
               <div className="bg-slate-900 dark:bg-slate-800 text-white px-6 py-2.5 flex justify-between items-center no-print">
@@ -229,7 +253,6 @@ const App: React.FC = () => {
 
       <ChatAssistant invoice={invoice} onInvoiceUpdate={(u) => setInvoice(prev => ({ ...prev, ...u }))} />
       
-      {/* Global Overlays */}
       {isDownloading && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[200] flex items-center justify-center no-print">
           <div className="bg-white dark:bg-slate-900 p-8 rounded-[2rem] shadow-2xl flex flex-col items-center gap-4 max-w-sm text-center border dark:border-slate-800">
