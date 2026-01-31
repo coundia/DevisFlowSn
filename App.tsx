@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Eye, Building2, User, ListOrdered, FileCheck, RefreshCw, ChevronRight, Moon, Sun, Loader2, CheckCircle2, WifiOff, Bookmark } from 'lucide-react';
+import { FileText, Download, Eye, Building2, User, ListOrdered, FileCheck, RefreshCw, ChevronRight, Moon, Sun, Loader2, CheckCircle2, WifiOff, Bookmark, Settings } from 'lucide-react';
 import { useInvoiceState } from './hooks/useInvoiceState';
 import { calculateTotal } from './utils/invoiceUtils';
 import InvoicePreview from './components/InvoicePreview';
@@ -10,6 +10,7 @@ import EditorStepItems from './components/EditorStepItems';
 import EditorStepFinalize from './components/EditorStepFinalize';
 import ChatAssistant from './components/ChatAssistant';
 import EditorStepCatalog from './components/EditorStepCatalog';
+import EditorStepConfig from './components/EditorStepConfig';
 
 const App: React.FC = () => {
   const { 
@@ -100,7 +101,8 @@ const App: React.FC = () => {
     { id: 1, label: 'Client', icon: User },
     { id: 2, label: 'Catalogue', icon: Bookmark },
     { id: 3, label: 'Articles', icon: ListOrdered },
-    { id: 4, label: 'Finaliser', icon: FileCheck },
+    { id: 4, label: 'Réglages', icon: Settings },
+    { id: 5, label: 'Finaliser', icon: FileCheck },
   ];
 
   return (
@@ -196,7 +198,8 @@ const App: React.FC = () => {
             {activeStep === 1 && <EditorStepClient receiver={invoice.receiver} invoiceNumber={invoice.invoiceNumber} dueDate={invoice.dueDate} onUpdateReceiver={updateReceiver} onUpdateInvoice={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} />}
             {activeStep === 2 && <EditorStepCatalog catalog={catalog} onAdd={addCatalogItem} onUpdate={updateCatalogItem} onDelete={deleteCatalogItem} />}
             {activeStep === 3 && <EditorStepItems invoice={invoice} updateItem={updateItem} addItem={addItem} removeItem={removeItem} catalog={catalog} />}
-            {activeStep === 4 && <EditorStepFinalize invoice={invoice} onUpdate={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} templates={templates} onSaveTemplate={saveAsTemplate} onApplyTemplate={handleApplyTemplate} onDeleteTemplate={deleteTemplate} />}
+            {activeStep === 4 && <EditorStepConfig invoice={invoice} onUpdate={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} />}
+            {activeStep === 5 && <EditorStepFinalize invoice={invoice} onUpdate={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} templates={templates} onSaveTemplate={saveAsTemplate} onApplyTemplate={handleApplyTemplate} onDeleteTemplate={deleteTemplate} />}
           </div>
           
           <div className="flex justify-between items-center pt-6 no-print">
@@ -214,10 +217,10 @@ const App: React.FC = () => {
                </div>
                <div className="w-px h-10 bg-white/10" />
                <button 
-                 onClick={() => activeStep < 4 ? setActiveStep(p => p + 1) : setActiveTab('preview')} 
+                 onClick={() => activeStep < 5 ? setActiveStep(p => p + 1) : setActiveTab('preview')} 
                  className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 hover:text-indigo-400 transition-all active:scale-90"
                >
-                 {activeStep < 4 ? 'Suivant' : 'Vérifier'} <ChevronRight className="w-4 h-4" />
+                 {activeStep < 5 ? 'Suivant' : 'Vérifier'} <ChevronRight className="w-4 h-4" />
                </button>
             </div>
           </div>

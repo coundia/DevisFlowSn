@@ -57,6 +57,8 @@ export interface InvoiceData {
   notes: string;
   terms: string;
   themeId: string;
+  documentType: 'invoice' | 'proforma';
+  language: 'fr' | 'en';
 }
 
 export const DEFAULT_SENDER: CompanyDetails = {
@@ -90,5 +92,7 @@ export const DEFAULT_INVOICE: InvoiceData = {
   currency: 'XOF',
   notes: 'Merci de votre confiance !',
   terms: 'Paiement attendu sous 14 jours par virement ou chèque.',
-  themeId: 'professional'
+  themeId: 'professional',
+  documentType: 'invoice',
+  language: 'fr',
 };

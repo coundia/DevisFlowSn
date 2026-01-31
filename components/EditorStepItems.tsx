@@ -44,7 +44,7 @@ const EditorStepItems: React.FC<Props> = ({ invoice, catalog, updateItem, addIte
   }
 
   const inputClasses = "w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 outline-none transition-all";
-  const labelClasses = "text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] block";
+  const labelClasses = "text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] block mb-1.5";
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-[3rem] border border-slate-200 dark:border-slate-800 p-10 shadow-[0_20px_50px_-15px_rgba(0,0,0,0.05)] dark:shadow-none space-y-8">
@@ -75,7 +75,6 @@ const EditorStepItems: React.FC<Props> = ({ invoice, catalog, updateItem, addIte
 
         {invoice.items.map(item => (
           <div key={item.id} className={`bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border transition-all ${confirmDeleteId === item.id ? 'border-red-200 dark:border-red-900 ring-2 ring-red-500/10' : 'border-slate-200 dark:border-slate-800'}`}>
-            <div className="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
               {confirmDeleteId === item.id ? (
                 <div className="col-span-12 flex items-center justify-between animate-in fade-in slide-in-from-top-1 duration-200">
                   <div className="flex items-center gap-3">
@@ -91,16 +90,24 @@ const EditorStepItems: React.FC<Props> = ({ invoice, catalog, updateItem, addIte
                   </div>
                 </div>
               ) : (
-                <>
-                  <div className="sm:col-span-6"><input className={inputClasses} value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} placeholder="Description..." /></div>
-                  <div className="grid grid-cols-3 sm:col-span-6 gap-2">
-                    <div className="col-span-1"><input type="number" className={`${inputClasses} text-center`} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} /></div>
-                    <div className="col-span-1"><input type="number" className={`${inputClasses} text-right`} value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} /></div>
-                    <div className="col-span-1 flex justify-end items-center"><button onClick={() => setConfirmDeleteId(item.id)} className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Supprimer"><Trash2 className="w-4 h-4" /></button></div>
+                <div className="grid grid-cols-12 gap-x-4 gap-y-3 sm:items-center">
+                  <div className="col-span-12 sm:col-span-6">
+                    <label className={`${labelClasses} sm:hidden`}>Description</label>
+                    <input className={inputClasses} value={item.description} onChange={(e) => updateItem(item.id, 'description', e.target.value)} placeholder="Description..." />
                   </div>
-                </>
+                  <div className="col-span-5 sm:col-span-2">
+                    <label className={`${labelClasses} sm:hidden`}>Qté</label>
+                    <input type="number" className={`${inputClasses} text-center`} value={item.quantity} onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)} />
+                  </div>
+                  <div className="col-span-5 sm:col-span-3">
+                    <label className={`${labelClasses} sm:hidden`}>Prix Unitaire</label>
+                    <input type="number" className={`${inputClasses} text-right`} value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} />
+                  </div>
+                  <div className="col-span-2 sm:col-span-1 flex justify-end items-end sm:items-center h-full">
+                    <button onClick={() => setConfirmDeleteId(item.id)} className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Supprimer"><Trash2 className="w-4 h-4" /></button>
+                  </div>
+                </div>
               )}
-            </div>
           </div>
         ))}
         

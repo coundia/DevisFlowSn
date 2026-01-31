@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { InvoiceData, INVOICE_THEMES } from '../types';
+import { t } from '../utils/i18n';
 
 interface Props {
   data: InvoiceData;
@@ -12,6 +13,9 @@ const InvoicePreview: React.FC<Props> = ({ data }) => {
   const calculateTotal = () => calculateSubtotal() + calculateTax();
 
   const theme = INVOICE_THEMES.find(t => t.id === data.themeId) || INVOICE_THEMES[0];
+  const lang = data.language || 'fr';
+  
+  const documentTitle = data.documentType === 'proforma' ? t('proformaInvoiceTitle', lang) : t('invoiceTitle', lang);
 
   const getCurrencySymbol = (code: string) => {
     switch(code) {
@@ -64,16 +68,16 @@ const InvoicePreview: React.FC<Props> = ({ data }) => {
         <div className="text-right">
            <div className="space-y-3 text-left">
             <div>
-              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Facture N°</p>
+              <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{documentTitle} N°</p>
               <p className="text-base font-black text-slate-900 tracking-tight">{data.invoiceNumber}</p>
             </div>
             <div className="flex gap-8">
                <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Date</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('date', lang)}</p>
                 <p className="text-[11px] font-bold text-slate-700">{new Date(data.date).toLocaleDateString()}</p>
               </div>
               <div>
-                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Échéance</p>
+                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{t('dueDate', lang)}</p>
                 <p className="text-[11px] font-bold text-rose-600">{new Date(data.dueDate).toLocaleDateString()}</p>
               </div>
             </div>
@@ -86,7 +90,7 @@ const InvoicePreview: React.FC<Props> = ({ data }) => {
           className="text-[9px] font-black uppercase tracking-[0.3em] mb-2"
           style={{ color: theme.accent }}
         >
-          Facturé à
+          {t('billedTo', lang)}
         </h3>
         <h4 className="text-lg font-black text-slate-900 mb-1 tracking-tighter">{data.receiver.name}</h4>
         <div className="text-xs text-slate-500 whitespace-pre-line font-bold leading-relaxed max-w-sm">
@@ -98,10 +102,10 @@ const InvoicePreview: React.FC<Props> = ({ data }) => {
         <table className="w-full text-left table-fixed">
           <thead>
             <tr className="border-b-2" style={{ borderColor: theme.primary }}>
-              <th className="py-3 w-1/2 text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">Description</th>
-              <th className="py-3 w-[15%] text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] text-center">Qté</th>
-              <th className="py-3 w-[20%] text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] text-right">P.U.</th>
-              <th className="py-3 w-[20%] text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] text-right">Montant</th>
+              <th className="py-3 w-1/2 text-[10px] font-black text-slate-900 uppercase tracking-[0.2em]">{t('description', lang)}</th>
+              <th className="py-3 w-[15%] text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] text-center">{t('quantity', lang)}</th>
+              <th className="py-3 w-[20%] text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] text-right">{t('rate', lang)}</th>
+              <th className="py-3 w-[20%] text-[10px] font-black text-slate-900 uppercase tracking-[0.2em] text-right">{t('amount', lang)}</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
@@ -116,7 +120,7 @@ const InvoicePreview: React.FC<Props> = ({ data }) => {
               </tr>
             )) : (
               <tr>
-                <td colSpan={4} className="py-12 text-center text-slate-300 font-bold uppercase tracking-widest text-[10px]">Aucun article</td>
+                <td colSpan={4} className="py-12 text-center text-slate-300 font-bold uppercase tracking-widest text-[10px]">{t('noItems', lang)}</td>
               </tr>
             )}
           </tbody>
@@ -126,16 +130,16 @@ const InvoicePreview: React.FC<Props> = ({ data }) => {
       <div className="flex justify-end mt-10">
         <div className="w-full max-w-[280px] space-y-3">
           <div className="flex justify-between text-sm font-bold text-slate-500">
-            <span>Sous-Total</span>
+            <span>{t('subtotal', lang)}</span>
             <span>{calculateSubtotal().toLocaleString()} {symbol}</span>
           </div>
           <div className="flex justify-between text-sm font-bold text-slate-500">
-            <span>TVA ({data.taxRate}%)</span>
+            <span>{t('tax', lang)} ({data.taxRate}%)</span>
             <span>{calculateTax().toLocaleString()} {symbol}</span>
           </div>
           <div className="h-px bg-slate-200 w-full my-2"></div>
           <div className="flex justify-between items-center">
-            <span className="text-base font-black uppercase" style={{ color: theme.primary }}>Total à Payer</span>
+            <span className="text-base font-black uppercase" style={{ color: theme.primary }}>{t('totalDue', lang)}</span>
             <span className="text-2xl font-black tracking-tighter" style={{ color: theme.primary }}>
               {calculateTotal().toLocaleString()} <span className="text-base align-baseline">{symbol}</span>
             </span>
@@ -146,13 +150,13 @@ const InvoicePreview: React.FC<Props> = ({ data }) => {
       <div className="pt-8 border-t border-slate-100">
         <div className="grid grid-cols-2 gap-10">
            <div>
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Notes</h4>
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{t('notes', lang)}</h4>
             <p className="text-[11px] text-slate-500 leading-relaxed font-medium">
-              {data.notes || "Merci pour votre confiance."}
+              {data.notes || t('defaultNote', lang)}
             </p>
           </div>
            <div>
-            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">Infos légales</h4>
+            <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2">{t('legalInfo', lang)}</h4>
             <div className="text-[11px] text-slate-500 space-y-1 font-medium">
                 {data.sender.ninea && <p><strong>NINEA:</strong> {data.sender.ninea}</p>}
                 {data.sender.rccm && <p><strong>RCCM:</strong> {data.sender.rccm}</p>}
@@ -161,7 +165,7 @@ const InvoicePreview: React.FC<Props> = ({ data }) => {
         </div>
         <div className="mt-12 text-center border-t border-slate-50 pt-6">
           <p className="text-[9px] text-slate-400 font-bold uppercase tracking-[0.2em]">
-            Généré avec DevisFlow SN
+            {t('generatedWith', lang)}
           </p>
         </div>
       </div>
