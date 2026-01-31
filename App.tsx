@@ -65,7 +65,7 @@ const App: React.FC = () => {
   }, [isDark]);
 
   const handleDownloadPDF = async () => {
-    const element = document.getElementById('invoice-preview-capture');
+    const element = document.getElementById('invoice-pdf-content');
     if (!element) return;
     setIsDownloading(true);
     const opt = {
@@ -234,7 +234,7 @@ const App: React.FC = () => {
                   )}
                 </div>
               </div>
-              <div id="invoice-preview-capture" className="bg-slate-50 dark:bg-slate-950 p-2 sm:p-6 md:p-12 overflow-hidden transition-colors duration-500">
+              <div className="bg-slate-50 dark:bg-slate-950 p-2 sm:p-6 md:p-12 overflow-hidden transition-colors duration-500">
                  <InvoicePreview data={invoice} />
               </div>
            </div>

@@ -6,7 +6,8 @@ import { InvoiceData } from '../types';
 
 interface Props {
   invoice: InvoiceData;
-  onInvoiceUpdate: (updated: InvoiceData) => void;
+// FIX: The AI may only return updated fields, so the update object is partial.
+  onInvoiceUpdate: (updated: Partial<InvoiceData>) => void;
   isOnline: boolean;
 }
 

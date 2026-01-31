@@ -25,7 +25,7 @@ const InvoicePreview: React.FC<Props> = ({ data }) => {
   const symbol = getCurrencySymbol(data.currency);
 
   return (
-    <div className="bg-white p-12 sm:p-20 w-full text-slate-800 invoice-document min-h-[297mm] flex flex-col mx-auto shadow-2xl relative overflow-hidden" style={{ maxWidth: '210mm' }}>
+    <div id="invoice-pdf-content" className="bg-white p-12 sm:p-20 w-full text-slate-800 invoice-document min-h-[297mm] flex flex-col mx-auto shadow-2xl relative overflow-hidden" style={{ maxWidth: '210mm' }}>
       {/* Visual Accent Top Bar */}
       <div 
         className="absolute top-0 left-0 w-full h-3" 

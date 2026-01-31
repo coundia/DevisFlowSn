@@ -36,7 +36,9 @@ export const handleAiChat = async (userMessage: string, currentInvoice: InvoiceD
                   name: { type: Type.STRING },
                   address: { type: Type.STRING },
                   email: { type: Type.STRING },
-                  phone: { type: Type.STRING }
+                  phone: { type: Type.STRING },
+// FIX: Add missing website property to schema to match CompanyDetails type.
+                  website: { type: Type.STRING },
                 }
               },
               items: {
@@ -58,7 +60,12 @@ export const handleAiChat = async (userMessage: string, currentInvoice: InvoiceD
       }
     }
   });
-  return JSON.parse(response.text);
+// FIX: Add a check for an empty response before parsing JSON to prevent runtime errors.
+  const text = response.text;
+  if (!text) {
+    throw new Error('AI returned an empty response.');
+  }
+  return JSON.parse(text);
 };
 
 export const getAiSuggestions = async (senderName: string, receiverName: string) => {
@@ -82,5 +89,10 @@ export const getAiSuggestions = async (senderName: string, receiverName: string)
       }
     }
   });
-  return JSON.parse(response.text);
+// FIX: Add a check for an empty response and return an empty array to prevent crashes in the UI component.
+  const text = response.text;
+  if (!text) {
+    return [];
+  }
+  return JSON.parse(text);
 };
