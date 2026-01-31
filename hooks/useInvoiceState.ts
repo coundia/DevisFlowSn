@@ -1,18 +1,25 @@
 
 import { useState, useEffect } from 'react';
-import { CompanyDetails, InvoiceData, DEFAULT_INVOICE, DEFAULT_SENDER, LineItem } from '../types';
+import { CompanyDetails, InvoiceData, DEFAULT_INVOICE, DEFAULT_SENDER, LineItem, InvoiceTemplate } from '../types';
 
 export function useInvoiceState() {
   const [profiles, setProfiles] = useState<CompanyDetails[]>([]);
   const [activeProfileId, setActiveProfileId] = useState<string>('');
   const [invoice, setInvoice] = useState<InvoiceData>(DEFAULT_INVOICE);
+  const [templates, setTemplates] = useState<InvoiceTemplate[]>([]);
 
   useEffect(() => {
     const savedProfiles = localStorage.getItem('devisflow_profiles');
     const savedDraft = localStorage.getItem('devisflow_current_invoice');
-    const initialProfiles = savedProfiles ? JSON.parse(savedProfiles) : [DEFAULT_SENDER];
+    const savedTemplates = localStorage.getItem('devisflow_templates');
     
+    const initialProfiles = savedProfiles ? JSON.parse(savedProfiles) : [DEFAULT_SENDER];
     setProfiles(initialProfiles);
+
+    if (savedTemplates) {
+      setTemplates(JSON.parse(savedTemplates));
+    }
+    
     if (savedDraft) {
       const parsed = JSON.parse(savedDraft);
       setInvoice(parsed);
@@ -26,7 +33,10 @@ export function useInvoiceState() {
   useEffect(() => {
     if (profiles.length > 0) localStorage.setItem('devisflow_profiles', JSON.stringify(profiles));
     localStorage.setItem('devisflow_current_invoice', JSON.stringify(invoice));
-  }, [profiles, invoice]);
+    if (templates.length > 0 || localStorage.getItem('devisflow_templates')) {
+        localStorage.setItem('devisflow_templates', JSON.stringify(templates));
+    }
+  }, [profiles, invoice, templates]);
 
   const updateSender = (field: string, value: any) => {
     setInvoice(prev => {
@@ -80,14 +90,8 @@ export function useInvoiceState() {
   const duplicateProfile = (id: string) => {
     const profileToClone = profiles.find(p => p.id === id);
     if (!profileToClone) return;
-
     const newId = Math.random().toString(36).substr(2, 9);
-    const clonedProfile = { 
-      ...profileToClone, 
-      id: newId, 
-      name: `${profileToClone.name} (Copie)` 
-    };
-    
+    const clonedProfile = { ...profileToClone, id: newId, name: `${profileToClone.name} (Copie)` };
     setProfiles(prev => [...prev, clonedProfile]);
     setActiveProfileId(newId);
     setInvoice(prev => ({ ...prev, sender: clonedProfile }));
@@ -109,9 +113,44 @@ export function useInvoiceState() {
     }
   };
 
+  const saveAsTemplate = (name: string) => {
+    const { sender, receiver, invoiceNumber, date, dueDate, ...templateData } = invoice;
+    const newTemplate: InvoiceTemplate = {
+      id: `tpl-${Date.now()}`,
+      name,
+      templateData,
+    };
+    setTemplates(prev => [...prev, newTemplate]);
+  };
+
+  const applyTemplate = (templateId: string) => {
+    const template = templates.find(t => t.id === templateId);
+    if (template && window.confirm(`Appliquer le modèle "${template.name}" ? Ceci écrasera les articles et options actuels.`)) {
+      setInvoice(prev => ({
+        ...DEFAULT_INVOICE,
+        ...prev,
+        ...template.templateData,
+        sender: prev.sender,
+        invoiceNumber: 'FAC-' + Math.floor(1000 + Math.random() * 9000),
+        date: new Date().toISOString().split('T')[0],
+        dueDate: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+        receiver: DEFAULT_INVOICE.receiver,
+      }));
+      return true;
+    }
+    return false;
+  };
+  
+  const deleteTemplate = (templateId: string) => {
+     if (window.confirm('Voulez-vous vraiment supprimer ce modèle ?')) {
+        setTemplates(prev => prev.filter(t => t.id !== templateId));
+     }
+  };
+
   return { 
-    invoice, setInvoice, profiles, activeProfileId, 
+    invoice, setInvoice, profiles, activeProfileId, templates,
     updateSender, updateReceiver, addItem, updateItem, removeItem, 
-    switchProfile, addNewProfile, duplicateProfile, deleteProfile, resetInvoice 
+    switchProfile, addNewProfile, duplicateProfile, deleteProfile, resetInvoice,
+    saveAsTemplate, applyTemplate, deleteTemplate
   };
 }

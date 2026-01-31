@@ -25,6 +25,12 @@ export interface InvoiceTheme {
   accent: string;
 }
 
+export interface InvoiceTemplate {
+  id: string;
+  name: string;
+  templateData: Partial<Omit<InvoiceData, 'sender' | 'receiver' | 'invoiceNumber' | 'date' | 'dueDate'>>;
+}
+
 export const INVOICE_THEMES: InvoiceTheme[] = [
   { id: 'professional', name: 'Elite Slate', primary: '#0f172a', accent: '#6366f1' }, 
   { id: 'modern-blue', name: 'Azure Tide', primary: '#1e3a8a', accent: '#3b82f6' }, 
