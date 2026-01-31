@@ -1,12 +1,14 @@
-
 {
   "name": "devisflow-sn",
   "private": true,
   "version": "1.0.0",
+  "homepage": "https://coundia.github.io/DevisFlowSn",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+      "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -19,6 +21,7 @@
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.3.4",
+    "gh-pages": "^6.3.0",
     "typescript": "^5.7.3",
     "vite": "^6.0.7"
   }

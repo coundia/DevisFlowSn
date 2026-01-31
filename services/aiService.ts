@@ -58,7 +58,7 @@ export const handleAiChat = async (userMessage: string, currentInvoice: InvoiceD
       }
     }
   });
-  return JSON.parse(response.text);
+  return JSON.parse(response.text!);
 };
 
 export const getAiSuggestions = async (senderName: string, receiverName: string) => {
@@ -82,5 +82,5 @@ export const getAiSuggestions = async (senderName: string, receiverName: string)
       }
     }
   });
-  return JSON.parse(response.text);
+  return JSON.parse(response.text!);
 };
