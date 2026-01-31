@@ -6,21 +6,47 @@ import { InvoiceData } from '../types';
 
 interface Props {
   invoice: InvoiceData;
-// FIX: The AI may only return updated fields, so the update object is partial.
   onInvoiceUpdate: (updated: Partial<InvoiceData>) => void;
   isOnline: boolean;
+  isOpen: boolean;
+  onClose: () => void;
+  openerRef: React.RefObject<HTMLButtonElement>;
 }
 
-const ChatAssistant: React.FC<Props> = ({ invoice, onInvoiceUpdate, isOnline }) => {
-  const [isOpen, setIsOpen] = useState(false);
+const ChatAssistant: React.FC<Props> = ({ invoice, onInvoiceUpdate, isOnline, isOpen, onClose, openerRef }) => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [messages, setMessages] = useState([{ role: 'assistant', text: "Bonjour ! Je peux vous aider à modifier votre facture par simple commande vocale ou textuelle. Que souhaitez-vous faire ?" }]);
+  const [messages, setMessages] = useState([{ role: 'assistant', text: "Bonjour ! Je peux vous aider à modifier votre facture. Que souhaitez-vous faire ?" }]);
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (isOpen) endRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isOpen]);
+    if (isOpen) {
+        endRef.current?.scrollIntoView({ behavior: 'smooth' });
+        setTimeout(() => inputRef.current?.focus(), 100); 
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') onClose();
+            if (e.key === 'Tab') {
+                 if (!panelRef.current) return;
+                 const focusable = panelRef.current.querySelectorAll<HTMLElement>('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+                 const first = focusable[0];
+                 const last = focusable[focusable.length - 1];
+                 if (e.shiftKey && document.activeElement === first) {
+                     last.focus();
+                     e.preventDefault();
+                 } else if (!e.shiftKey && document.activeElement === last) {
+                     first.focus();
+                     e.preventDefault();
+                 }
+            }
+        };
+        
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }
+  }, [isOpen, onClose]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,20 +67,20 @@ const ChatAssistant: React.FC<Props> = ({ invoice, onInvoiceUpdate, isOnline }) 
 
   return (
     <>
-      <div className={`fixed inset-y-0 right-0 w-full sm:w-[450px] bg-white dark:bg-slate-900 shadow-2xl z-[100] transition-transform duration-500 ease-in-out border-l dark:border-slate-800 flex flex-col no-print ${isOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+      <div ref={panelRef} className={`fixed inset-y-0 right-0 w-full sm:w-[450px] bg-white dark:bg-slate-900 shadow-2xl z-[100] transition-transform duration-500 ease-in-out border-l dark:border-slate-800 flex flex-col no-print ${isOpen ? 'translate-x-0' : 'translate-x-full'}`} role="dialog" aria-modal="true" aria-labelledby="chat-assistant-title">
         <div className="p-6 border-b dark:border-slate-800 flex justify-between items-center bg-slate-900 text-white">
           <div className="flex items-center gap-3">
             <div className="bg-indigo-500 p-2 rounded-lg">
               <Bot className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h3 className="font-bold text-sm">Assistant IA DevisFlow</h3>
+              <h3 id="chat-assistant-title" className="font-bold text-sm">Assistant IA DevisFlow</h3>
               <p className="text-[10px] text-slate-400">
                 {isOnline ? 'En ligne • Optimisé par Gemini 3' : 'Mode hors-ligne'}
               </p>
             </div>
           </div>
-          <button onClick={() => setIsOpen(false)} className="p-2 hover:bg-slate-800 rounded-lg transition-colors"><X className="w-5 h-5" /></button>
+          <button onClick={onClose} className="p-2 hover:bg-slate-800 rounded-lg transition-colors outline-none focus-visible:ring-2 focus-visible:ring-indigo-400" aria-label="Fermer l'assistant IA"><X className="w-5 h-5" /></button>
         </div>
         
         <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50 dark:bg-slate-950/30">
@@ -87,7 +113,8 @@ const ChatAssistant: React.FC<Props> = ({ invoice, onInvoiceUpdate, isOnline }) 
         
         <form onSubmit={handleSubmit} className="p-6 border-t dark:border-slate-800 bg-white dark:bg-slate-900 flex gap-3">
           <input 
-            className="flex-1 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 dark:text-slate-100 outline-none focus:ring-2 ring-indigo-500/20 disabled:opacity-50" 
+            ref={inputRef}
+            className="flex-1 bg-slate-50 dark:bg-slate-800 border dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-900 dark:text-slate-100 outline-none focus:ring-2 ring-transparent focus:ring-indigo-500 disabled:opacity-50" 
             value={input} 
             disabled={!isOnline}
             onChange={e => setInput(e.target.value)} 
@@ -96,7 +123,8 @@ const ChatAssistant: React.FC<Props> = ({ invoice, onInvoiceUpdate, isOnline }) 
           <button 
             type="submit" 
             disabled={loading || !input.trim() || !isOnline} 
-            className="bg-indigo-600 text-white p-3 rounded-xl disabled:opacity-50 shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-90"
+            aria-label="Envoyer le message"
+            className="bg-indigo-600 text-white p-3 rounded-xl disabled:opacity-50 shadow-lg shadow-indigo-200 dark:shadow-none transition-all active:scale-90 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-900"
           >
             <Send className="w-5 h-5" />
           </button>
@@ -105,8 +133,11 @@ const ChatAssistant: React.FC<Props> = ({ invoice, onInvoiceUpdate, isOnline }) 
       
       {!isOpen && (
         <button 
-          onClick={() => setIsOpen(true)} 
-          className="fixed bottom-8 right-8 w-16 h-16 bg-slate-900 dark:bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-2xl z-50 hover:scale-110 active:scale-90 transition-all group"
+          ref={openerRef}
+          onClick={() => isOpen ? onClose() : (panelRef.current?.focus(), setTimeout(() => inputRef.current?.focus(), 100))}
+          aria-haspopup="dialog"
+          aria-label="Ouvrir l'assistant IA (Ctrl+K)"
+          className="fixed bottom-8 right-8 w-16 h-16 bg-slate-900 dark:bg-indigo-600 text-white rounded-full flex items-center justify-center shadow-2xl z-50 hover:scale-110 active:scale-90 transition-all group outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-950"
         >
           <MessageSquare className="w-7 h-7 group-hover:rotate-12 transition-transform" />
           {isOnline && <div className="absolute -top-1 -right-1 w-4 h-4 bg-emerald-500 rounded-full border-2 border-white dark:border-slate-950" />}

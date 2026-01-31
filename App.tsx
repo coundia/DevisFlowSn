@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FileText, Download, Eye, Building2, User, ListOrdered, FileCheck, RefreshCw, ChevronRight, Moon, Sun, Loader2, CheckCircle2, WifiOff, Bookmark, Settings } from 'lucide-react';
 import { useInvoiceState } from './hooks/useInvoiceState';
 import { calculateTotal } from './utils/invoiceUtils';
@@ -31,6 +31,8 @@ const App: React.FC = () => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
   const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const chatAssistantButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -66,8 +68,9 @@ const App: React.FC = () => {
       document.documentElement.classList.remove('dark');
     }
   }, [isDark]);
-
+  
   const handleDownloadPDF = async () => {
+    if (isDownloading) return;
     const element = document.getElementById('invoice-pdf-content');
     if (!element) return;
     setIsDownloading(true);
@@ -105,6 +108,34 @@ const App: React.FC = () => {
     { id: 5, label: 'Finaliser', icon: FileCheck },
   ];
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'p') {
+            e.preventDefault();
+            handleDownloadPDF();
+        }
+        if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+            e.preventDefault();
+            setIsChatOpen(prev => !prev);
+        }
+        if (e.altKey && e.key === 'n' && activeStep === 3) {
+            e.preventDefault();
+            addItem();
+        }
+
+        if (document.activeElement?.tagName === 'INPUT' || document.activeElement?.tagName === 'TEXTAREA') return;
+
+        if (e.key === 'ArrowRight') {
+            setActiveStep(p => Math.min(p + 1, steps.length - 1));
+        }
+        if (e.key === 'ArrowLeft') {
+            setActiveStep(p => Math.max(p - 1, 0));
+        }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [activeStep]);
+
   return (
     <div className={`${isDark ? 'dark' : ''} min-h-screen bg-slate-100 dark:bg-slate-950 flex flex-col font-inter antialiased transition-colors duration-500`}>
       <header className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50 px-6 py-4 no-print flex justify-between items-center transition-all">
@@ -135,20 +166,21 @@ const App: React.FC = () => {
           <div className="h-8 w-px bg-slate-200 dark:bg-slate-800 hidden sm:block" />
           <button 
             onClick={() => setIsDark(!isDark)}
-            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm transition-all border border-slate-200/50 dark:border-slate-700"
+            aria-label={isDark ? "Activer le mode clair" : "Activer le mode sombre"}
+            className="p-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-white dark:hover:bg-slate-700 hover:shadow-sm transition-all border border-slate-200/50 dark:border-slate-700 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-950"
           >
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
           
-          <div className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl hidden sm:flex border border-slate-200/50 dark:border-slate-700">
-            <button onClick={() => setActiveTab('edit')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'edit' ? 'bg-white dark:bg-slate-700 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}>Éditeur</button>
-            <button onClick={() => setActiveTab('preview')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all ${activeTab === 'preview' ? 'bg-white dark:bg-slate-700 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}>Aperçu</button>
+          <div role="tablist" aria-label="Vue principale" className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl hidden sm:flex border border-slate-200/50 dark:border-slate-700">
+            <button role="tab" aria-selected={activeTab === 'edit'} onClick={() => setActiveTab('edit')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all outline-none ${activeTab === 'edit' ? 'bg-white dark:bg-slate-700 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}>Éditeur</button>
+            <button role="tab" aria-selected={activeTab === 'preview'} onClick={() => setActiveTab('preview')} className={`px-4 py-1.5 rounded-lg text-xs font-black uppercase tracking-wider transition-all outline-none ${activeTab === 'preview' ? 'bg-white dark:bg-slate-700 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200'}`}>Aperçu</button>
           </div>
           
           <button 
             onClick={handleDownloadPDF} 
             disabled={isDownloading}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 sm:px-7 py-2.5 rounded-xl text-sm font-black flex items-center gap-2.5 shadow-[0_10px_20px_-5px_rgba(79,70,229,0.4)] dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-5 sm:px-7 py-2.5 rounded-xl text-sm font-black flex items-center gap-2.5 shadow-[0_10px_20px_-5px_rgba(79,70,229,0.4)] dark:shadow-none hover:scale-[1.02] active:scale-95 transition-all disabled:opacity-50 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-950"
           >
             {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             <span className="hidden sm:inline uppercase tracking-widest text-[11px]">{isDownloading ? 'Génération...' : 'Exporter PDF'}</span>
@@ -159,34 +191,43 @@ const App: React.FC = () => {
 
       <main className="flex-1 max-w-[1600px] mx-auto w-full p-4 lg:p-8 grid grid-cols-1 lg:grid-cols-12 gap-10 relative">
         <aside className="lg:col-span-1 hidden lg:flex flex-col gap-5 sticky top-32 no-print h-fit">
-          {steps.map(s => (
-            <button 
-              key={s.id} 
-              onClick={() => { setActiveStep(s.id); setActiveTab('edit'); }} 
-              className={`w-20 h-20 rounded-3xl flex flex-col items-center justify-center transition-all group relative ${activeStep === s.id ? 'bg-indigo-600 text-white shadow-2xl shadow-indigo-200 dark:shadow-none translate-x-2' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:border-indigo-200 dark:hover:border-indigo-800 hover:text-indigo-600 hover:-translate-y-1'}`}
-            >
-              <s.icon className={`w-6 h-6 mb-1.5 transition-transform ${activeStep === s.id ? 'scale-110' : 'group-hover:scale-110'}`} />
-              <span className="text-[9px] font-black uppercase tracking-tighter">{s.label}</span>
-              {activeStep === s.id && <div className="absolute -left-1 w-1.5 h-8 bg-indigo-600 rounded-full" />}
-            </button>
-          ))}
+          <div role="tablist" aria-orientation="vertical" className="flex flex-col gap-5">
+            {steps.map(s => (
+              <button 
+                key={s.id} 
+                role="tab"
+                aria-selected={activeStep === s.id}
+                aria-controls={`step-panel-${s.id}`}
+                onClick={() => { setActiveStep(s.id); setActiveTab('edit'); }} 
+                className={`w-20 h-20 rounded-3xl flex flex-col items-center justify-center transition-all group relative outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-950 ${activeStep === s.id ? 'bg-indigo-600 text-white shadow-2xl shadow-indigo-200 dark:shadow-none translate-x-2' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-400 dark:text-slate-500 hover:border-indigo-200 dark:hover:border-indigo-800 hover:text-indigo-600 hover:-translate-y-1'}`}
+              >
+                <s.icon className={`w-6 h-6 mb-1.5 transition-transform ${activeStep === s.id ? 'scale-110' : 'group-hover:scale-110'}`} />
+                <span className="text-[9px] font-black uppercase tracking-tighter">{s.label}</span>
+                {activeStep === s.id && <div className="absolute -left-1 w-1.5 h-8 bg-indigo-600 rounded-full" />}
+              </button>
+            ))}
+          </div>
           <div className="h-px bg-slate-200 dark:bg-slate-800 my-4" />
           <button 
             onClick={resetInvoice} 
-            className="w-20 h-20 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400 hover:text-rose-500 hover:border-rose-100 dark:hover:border-rose-900 flex flex-col items-center justify-center transition-all hover:-translate-y-1"
+            aria-label="Réinitialiser la facture"
+            className="w-20 h-20 rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-400 hover:text-rose-500 hover:border-rose-100 dark:hover:border-rose-900 flex flex-col items-center justify-center transition-all hover:-translate-y-1 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-rose-500 dark:focus-visible:ring-offset-slate-950"
           >
             <RefreshCw className="w-5 h-5" />
             <span className="text-[9px] font-black uppercase mt-1.5">Reset</span>
           </button>
         </aside>
 
-        <section className={`lg:col-span-5 space-y-8 ${activeTab === 'preview' ? 'hidden' : 'animate-in fade-in slide-in-from-bottom-4 duration-500'}`}>
-          <div className="lg:hidden flex overflow-x-auto gap-3 pb-4 scrollbar-hide no-print">
+        <section role="region" aria-label="Éditeur de facture" className={`lg:col-span-5 space-y-8 ${activeTab === 'preview' ? 'hidden' : 'animate-in fade-in slide-in-from-bottom-4 duration-500'}`}>
+          <div role="tablist" className="lg:hidden flex overflow-x-auto gap-3 pb-4 scrollbar-hide no-print">
             {steps.map(s => (
               <button 
-                key={s.id} 
+                key={s.id}
+                role="tab"
+                aria-selected={activeStep === s.id}
+                aria-controls={`step-panel-${s.id}`}
                 onClick={() => setActiveStep(s.id)} 
-                className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shrink-0 border transition-all ${activeStep === s.id ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100 dark:shadow-none' : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'}`}
+                className={`px-6 py-2.5 rounded-2xl text-[10px] font-black uppercase tracking-widest shrink-0 border transition-all outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-950 ${activeStep === s.id ? 'bg-indigo-600 text-white border-indigo-600 shadow-lg shadow-indigo-100 dark:shadow-none' : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'}`}
               >
                 {s.label}
               </button>
@@ -194,19 +235,23 @@ const App: React.FC = () => {
           </div>
 
           <div className="transition-all duration-300">
-            {activeStep === 0 && <EditorStepCompany sender={invoice.sender} profiles={profiles} activeProfileId={activeProfileId} onUpdate={updateSender} onSwitch={switchProfile} onAdd={addNewProfile} onDuplicate={duplicateProfile} onDelete={deleteProfile} />}
-            {activeStep === 1 && <EditorStepClient receiver={invoice.receiver} invoiceNumber={invoice.invoiceNumber} dueDate={invoice.dueDate} onUpdateReceiver={updateReceiver} onUpdateInvoice={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} />}
-            {activeStep === 2 && <EditorStepCatalog catalog={catalog} onAdd={addCatalogItem} onUpdate={updateCatalogItem} onDelete={deleteCatalogItem} />}
-            {activeStep === 3 && <EditorStepItems invoice={invoice} updateItem={updateItem} addItem={addItem} removeItem={removeItem} catalog={catalog} />}
-            {activeStep === 4 && <EditorStepConfig invoice={invoice} onUpdate={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} />}
-            {activeStep === 5 && <EditorStepFinalize invoice={invoice} onUpdate={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} templates={templates} onSaveTemplate={saveAsTemplate} onApplyTemplate={handleApplyTemplate} onDeleteTemplate={deleteTemplate} />}
+            {steps.map(step => (
+              <div key={step.id} role="tabpanel" id={`step-panel-${step.id}`} hidden={activeStep !== step.id}>
+                {activeStep === 0 && <EditorStepCompany sender={invoice.sender} profiles={profiles} activeProfileId={activeProfileId} onUpdate={updateSender} onSwitch={switchProfile} onAdd={addNewProfile} onDuplicate={duplicateProfile} onDelete={deleteProfile} />}
+                {activeStep === 1 && <EditorStepClient receiver={invoice.receiver} invoiceNumber={invoice.invoiceNumber} dueDate={invoice.dueDate} onUpdateReceiver={updateReceiver} onUpdateInvoice={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} />}
+                {activeStep === 2 && <EditorStepCatalog catalog={catalog} onAdd={addCatalogItem} onUpdate={updateCatalogItem} onDelete={deleteCatalogItem} />}
+                {activeStep === 3 && <EditorStepItems invoice={invoice} updateItem={updateItem} addItem={addItem} removeItem={removeItem} catalog={catalog} />}
+                {activeStep === 4 && <EditorStepConfig invoice={invoice} onUpdate={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} />}
+                {activeStep === 5 && <EditorStepFinalize invoice={invoice} onUpdate={(f, v) => setInvoice(p => ({ ...p, [f]: v }))} templates={templates} onSaveTemplate={saveAsTemplate} onApplyTemplate={handleApplyTemplate} onDeleteTemplate={deleteTemplate} />}
+              </div>
+            ))}
           </div>
           
           <div className="flex justify-between items-center pt-6 no-print">
             <button 
               disabled={activeStep === 0} 
               onClick={() => setActiveStep(p => p - 1)} 
-              className={`text-slate-400 dark:text-slate-500 font-black uppercase tracking-[0.2em] text-[10px] hover:text-indigo-600 transition-colors py-3 px-6 rounded-2xl hover:bg-indigo-50 dark:hover:bg-slate-800 ${activeStep === 0 ? 'opacity-0 pointer-events-none' : ''}`}
+              className={`text-slate-400 dark:text-slate-500 font-black uppercase tracking-[0.2em] text-[10px] hover:text-indigo-600 transition-colors py-3 px-6 rounded-2xl hover:bg-indigo-50 dark:hover:bg-slate-800 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-950 ${activeStep === 0 ? 'opacity-0 pointer-events-none' : ''}`}
             >
               Précédent
             </button>
@@ -218,7 +263,7 @@ const App: React.FC = () => {
                <div className="w-px h-10 bg-white/10" />
                <button 
                  onClick={() => activeStep < 5 ? setActiveStep(p => p + 1) : setActiveTab('preview')} 
-                 className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 hover:text-indigo-400 transition-all active:scale-90"
+                 className="text-[11px] font-black uppercase tracking-[0.2em] flex items-center gap-2 hover:text-indigo-400 transition-all active:scale-90 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-400 dark:focus-visible:ring-offset-slate-900"
                >
                  {activeStep < 5 ? 'Suivant' : 'Vérifier'} <ChevronRight className="w-4 h-4" />
                </button>
@@ -226,7 +271,7 @@ const App: React.FC = () => {
           </div>
         </section>
 
-        <section className={`lg:col-span-6 sticky top-28 h-fit ${activeTab === 'preview' ? 'block' : 'hidden lg:block'}`}>
+        <section role="region" aria-label="Aperçu de la facture" className={`lg:col-span-6 sticky top-28 h-fit ${activeTab === 'preview' ? 'block' : 'hidden lg:block'}`}>
            <div className="bg-white dark:bg-slate-900 rounded-[3rem] shadow-[0_40px_80px_-20px_rgba(0,0,0,0.15)] dark:shadow-none overflow-hidden border border-slate-200 dark:border-slate-800 relative group">
               <div className="absolute inset-0 bg-gradient-to-tr from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
               <div className="bg-slate-950 dark:bg-slate-800 text-white px-8 py-3.5 flex justify-between items-center no-print">
@@ -248,7 +293,17 @@ const App: React.FC = () => {
         </section>
       </main>
 
-      <ChatAssistant invoice={invoice} onInvoiceUpdate={(u) => setInvoice(prev => ({ ...prev, ...u }))} isOnline={isOnline} />
+      <ChatAssistant 
+        invoice={invoice} 
+        onInvoiceUpdate={(u) => setInvoice(prev => ({ ...prev, ...u }))} 
+        isOnline={isOnline}
+        isOpen={isChatOpen}
+        onClose={() => {
+            setIsChatOpen(false);
+            chatAssistantButtonRef.current?.focus();
+        }}
+        openerRef={chatAssistantButtonRef}
+       />
       
       {isDownloading && (
         <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-md z-[200] flex items-center justify-center no-print animate-in fade-in duration-300">

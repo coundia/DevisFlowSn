@@ -41,7 +41,7 @@ const EditorStepCompany: React.FC<Props> = ({
           </div>
           Profil Entreprise
         </h2>
-        <button onClick={onAdd} className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 transition-colors px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">Ajouter</button>
+        <button onClick={onAdd} className="text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 transition-colors px-4 py-2 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-900">Ajouter</button>
       </div>
 
       <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide -mx-2 px-2">
@@ -51,30 +51,30 @@ const EditorStepCompany: React.FC<Props> = ({
               <div className="flex items-center gap-2 p-3 h-[46px] rounded-2xl bg-rose-50 dark:bg-rose-900/30 border-2 border-rose-200 dark:border-rose-800 animate-in fade-in duration-300">
                   <AlertTriangle className="w-4 h-4 text-rose-500 shrink-0" />
                   <span className="text-xs font-bold text-rose-800 dark:text-rose-200">Supprimer?</span>
-                  <button onClick={() => { onDelete(p.id); setConfirmDeleteId(null); }} className="px-3 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-black uppercase hover:bg-rose-700">Oui</button>
-                  <button onClick={() => setConfirmDeleteId(null)} className="px-3 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-black uppercase hover:bg-slate-300">Non</button>
+                  <button onClick={() => { onDelete(p.id); setConfirmDeleteId(null); }} className="px-3 py-1 bg-rose-600 text-white rounded-lg text-[10px] font-black uppercase hover:bg-rose-700 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-rose-500 dark:focus-visible:ring-offset-rose-900">Oui</button>
+                  <button onClick={() => setConfirmDeleteId(null)} className="px-3 py-1 bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-lg text-[10px] font-black uppercase hover:bg-slate-300 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 dark:focus-visible:ring-offset-slate-900">Non</button>
               </div>
             ) : (
               <>
                 <button 
                   onClick={() => onSwitch(p.id)}
-                  className={`px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-wider border-2 transition-all flex items-center gap-3 ${activeProfileId === p.id ? 'border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-100 dark:shadow-none' : 'border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-slate-400 hover:border-slate-300 hover:text-slate-600'}`}
+                  className={`px-6 py-3 rounded-2xl text-[11px] font-black uppercase tracking-wider border-2 transition-all flex items-center gap-3 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-900 ${activeProfileId === p.id ? 'border-indigo-600 bg-indigo-600 text-white shadow-xl shadow-indigo-100 dark:shadow-none' : 'border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800 text-slate-400 hover:border-slate-300 hover:text-slate-600'}`}
                 >
                   <span className="truncate max-w-[120px]">{p.name || 'Sans nom'}</span>
                 </button>
                 <div className="absolute -top-2.5 -right-2.5 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
                   <button 
                     onClick={(e) => { e.stopPropagation(); onDuplicate(p.id); }} 
-                    className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full p-2 text-slate-400 hover:text-indigo-600 shadow-xl transition-all hover:scale-125"
-                    title="Cloner"
+                    aria-label={`Cloner le profil ${p.name}`}
+                    className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full p-2 text-slate-400 hover:text-indigo-600 shadow-xl transition-all hover:scale-125 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
                   >
                     <Copy className="w-3 h-3" />
                   </button>
                   {profiles.length > 1 && (
                     <button 
                       onClick={(e) => { e.stopPropagation(); setConfirmDeleteId(p.id); }} 
-                      className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full p-2 text-slate-400 hover:text-rose-600 shadow-xl transition-all hover:scale-125"
-                      title="Supprimer"
+                      aria-label={`Supprimer le profil ${p.name}`}
+                      className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-full p-2 text-slate-400 hover:text-rose-600 shadow-xl transition-all hover:scale-125 outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -88,10 +88,10 @@ const EditorStepCompany: React.FC<Props> = ({
 
       <div className="flex items-center gap-8 p-7 bg-slate-50/50 dark:bg-slate-800/30 rounded-[2rem] border border-dashed border-slate-200 dark:border-slate-700 transition-all hover:border-indigo-400 group">
         <div className="w-20 h-20 bg-white dark:bg-slate-800 rounded-2xl shadow-sm flex items-center justify-center overflow-hidden border border-slate-200 dark:border-slate-700 group-hover:scale-105 transition-transform">
-          {sender.logo ? <img src={sender.logo} className="w-full h-full object-contain p-2" /> : <Upload className="w-6 h-6 text-slate-300 dark:text-slate-600" />}
+          {sender.logo ? <img src={sender.logo} alt="Logo de l'entreprise" className="w-full h-full object-contain p-2" /> : <Upload className="w-6 h-6 text-slate-300 dark:text-slate-600" />}
         </div>
         <div className="flex flex-col gap-2">
-          <button onClick={() => fileRef.current?.click()} className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700">Mettre à jour le logo</button>
+          <button onClick={() => fileRef.current?.click()} className="text-xs font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-900 rounded-md px-2 py-1">Mettre à jour le logo</button>
           <p className="text-[10px] text-slate-400 dark:text-slate-500 font-bold tracking-tight">SVG, PNG ou JPG (min. 400x400px)</p>
         </div>
         <input type="file" ref={fileRef} className="hidden" accept="image/*" onChange={handleLogo} />
@@ -99,28 +99,28 @@ const EditorStepCompany: React.FC<Props> = ({
 
       <div className="grid grid-cols-2 gap-8">
         <div className="col-span-2">
-          <label className={labelClasses}>Nom de la Société</label>
-          <input className={inputClasses} value={sender.name} onChange={e => onUpdate('name', e.target.value)} placeholder="Ex: DevisFlow Creative Studio" />
+          <label htmlFor="company-name" className={labelClasses}>Nom de la Société</label>
+          <input id="company-name" className={inputClasses} value={sender.name} onChange={e => onUpdate('name', e.target.value)} placeholder="Ex: DevisFlow Creative Studio" />
         </div>
         <div className="col-span-2">
-          <label className={labelClasses}>Adresse du siège social</label>
-          <textarea className={inputClasses} rows={3} value={sender.address} onChange={e => onUpdate('address', e.target.value)} placeholder="Adresse complète de l'entreprise..." />
+          <label htmlFor="company-address" className={labelClasses}>Adresse du siège social</label>
+          <textarea id="company-address" className={inputClasses} rows={3} value={sender.address} onChange={e => onUpdate('address', e.target.value)} placeholder="Adresse complète de l'entreprise..." />
         </div>
         <div>
-          <label className={labelClasses}>Email Professionnel</label>
-          <input className={inputClasses} value={sender.email} onChange={e => onUpdate('email', e.target.value)} placeholder="contact@entreprise.sn" />
+          <label htmlFor="company-email" className={labelClasses}>Email Professionnel</label>
+          <input id="company-email" type="email" className={inputClasses} value={sender.email} onChange={e => onUpdate('email', e.target.value)} placeholder="contact@entreprise.sn" />
         </div>
         <div>
-          <label className={labelClasses}>Numéro de Contact</label>
-          <input className={inputClasses} value={sender.phone} onChange={e => onUpdate('phone', e.target.value)} placeholder="+221 ..." />
+          <label htmlFor="company-phone" className={labelClasses}>Numéro de Contact</label>
+          <input id="company-phone" type="tel" className={inputClasses} value={sender.phone} onChange={e => onUpdate('phone', e.target.value)} placeholder="+221 ..." />
         </div>
         <div className="pt-2">
-          <label className={labelClasses}>NINEA (Sénégal)</label>
-          <input className={inputClasses} value={sender.ninea} onChange={e => onUpdate('ninea', e.target.value)} placeholder="0000000 2Y3" />
+          <label htmlFor="company-ninea" className={labelClasses}>NINEA (Sénégal)</label>
+          <input id="company-ninea" className={inputClasses} value={sender.ninea} onChange={e => onUpdate('ninea', e.target.value)} placeholder="0000000 2Y3" />
         </div>
         <div className="pt-2">
-          <label className={labelClasses}>RCCM</label>
-          <input className={inputClasses} value={sender.rccm} onChange={e => onUpdate('rccm', e.target.value)} placeholder="SN DKR 2024 ..." />
+          <label htmlFor="company-rccm" className={labelClasses}>RCCM</label>
+          <input id="company-rccm" className={inputClasses} value={sender.rccm} onChange={e => onUpdate('rccm', e.target.value)} placeholder="SN DKR 2024 ..." />
         </div>
       </div>
     </div>

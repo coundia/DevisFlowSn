@@ -58,7 +58,7 @@ const EditorStepItems: React.FC<Props> = ({ invoice, catalog, updateItem, addIte
         <button 
           onClick={handleSuggest} 
           disabled={loading} 
-          className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all border border-indigo-100 dark:border-indigo-900/50"
+          className="flex items-center gap-2 text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-4 py-2 rounded-xl text-xs font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-all border border-indigo-100 dark:border-indigo-900/50 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-900"
         >
           {loading ? <RefreshCw className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />} Suggestions IA
         </button>
@@ -85,8 +85,8 @@ const EditorStepItems: React.FC<Props> = ({ invoice, catalog, updateItem, addIte
                     </div>
                   </div>
                   <div className="flex gap-2">
-                    <button onClick={() => setConfirmDeleteId(null)} className="px-4 py-2 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-200 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-600 hover:bg-slate-50 transition-all flex items-center gap-1"><X className="w-3 h-3" /> Annuler</button>
-                    <button onClick={() => { removeItem(item.id); setConfirmDeleteId(null); }} className="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 dark:shadow-none flex items-center gap-1"><Check className="w-3 h-3" /> Confirmer</button>
+                    <button onClick={() => setConfirmDeleteId(null)} className="px-4 py-2 bg-white dark:bg-slate-700 text-slate-600 dark:text-slate-200 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-600 hover:bg-slate-50 transition-all flex items-center gap-1 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-slate-500 dark:focus-visible:ring-offset-slate-900"><X className="w-3 h-3" /> Annuler</button>
+                    <button onClick={() => { removeItem(item.id); setConfirmDeleteId(null); }} className="px-4 py-2 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition-all shadow-lg shadow-red-200 dark:shadow-none flex items-center gap-1 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-500 dark:focus-visible:ring-offset-slate-900"><Check className="w-3 h-3" /> Confirmer</button>
                   </div>
                 </div>
               ) : (
@@ -104,7 +104,7 @@ const EditorStepItems: React.FC<Props> = ({ invoice, catalog, updateItem, addIte
                     <input type="number" className={`${inputClasses} text-right`} value={item.rate} onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)} />
                   </div>
                   <div className="col-span-2 sm:col-span-1 flex justify-end items-end sm:items-center h-full">
-                    <button onClick={() => setConfirmDeleteId(item.id)} className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors" title="Supprimer"><Trash2 className="w-4 h-4" /></button>
+                    <button onClick={() => setConfirmDeleteId(item.id)} className="p-2 text-slate-300 dark:text-slate-600 hover:text-red-500 dark:hover:text-red-400 transition-colors outline-none focus-visible:ring-2 focus-visible:ring-red-500 rounded-full" aria-label={`Supprimer l'article ${item.description}`}><Trash2 className="w-4 h-4" /></button>
                   </div>
                 </div>
               )}
@@ -114,24 +114,26 @@ const EditorStepItems: React.FC<Props> = ({ invoice, catalog, updateItem, addIte
         <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
           <button 
             onClick={() => addItem()} 
-            className="flex-1 py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 text-sm font-bold hover:border-indigo-400 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-900/50"
+            className="flex-1 py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 text-sm font-bold hover:border-indigo-400 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-900/50 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-900"
           >
-            <Plus className="w-4 h-4" /> Ajouter une Ligne
+            <Plus className="w-4 h-4" /> Ajouter une Ligne (Alt+N)
           </button>
           <div className="relative flex-1" ref={catalogRef}>
              <button 
                 onClick={() => setIsCatalogOpen(p => !p)} 
-                className="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 text-sm font-bold hover:border-indigo-400 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-900/50"
+                aria-haspopup="true"
+                aria-expanded={isCatalogOpen}
+                className="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-slate-400 dark:text-slate-500 text-sm font-bold hover:border-indigo-400 dark:hover:border-indigo-700 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all flex items-center justify-center gap-2 bg-white/50 dark:bg-slate-900/50 outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-indigo-500 dark:focus-visible:ring-offset-slate-900"
             >
                 <Bookmark className="w-4 h-4" /> Ajouter du Catalogue <ChevronDown className={`w-4 h-4 transition-transform ${isCatalogOpen ? 'rotate-180' : ''}`} />
             </button>
             {isCatalogOpen && (
                 <div className="absolute bottom-full right-0 mb-2 w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-2xl border dark:border-slate-700 z-10 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <div className="p-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase text-center border-b dark:border-slate-700">Sélectionner un article</div>
-                    <div className="max-h-60 overflow-y-auto">
+                    <div role="menu" className="max-h-60 overflow-y-auto">
                       {catalog.length > 0 ? (
                         catalog.map(item => (
-                            <button key={item.id} onClick={() => handleSelectCatalogItem(item)} className="w-full text-left flex justify-between items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors">
+                            <button role="menuitem" key={item.id} onClick={() => handleSelectCatalogItem(item)} className="w-full text-left flex justify-between items-center p-3 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors outline-none focus-visible:bg-indigo-50 dark:focus-visible:bg-slate-700">
                                 <span className="text-sm font-bold text-slate-800 dark:text-slate-200">{item.description}</span>
                                 <span className="text-xs font-bold text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/40 px-2 py-1 rounded-md">{item.rate.toLocaleString()}</span>
                             </button>
