@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { FileText, Download, Eye, Building2, User, ListOrdered, FileCheck, RefreshCw, ChevronRight, Moon, Sun, Loader2, CheckCircle2 } from 'lucide-react';
+import { FileText, Download, Eye, Building2, User, ListOrdered, FileCheck, RefreshCw, ChevronRight, Moon, Sun, Loader2, CheckCircle2, WifiOff } from 'lucide-react';
 import { useInvoiceState } from './hooks/useInvoiceState';
 import { calculateTotal } from './utils/invoiceUtils';
 import InvoicePreview from './components/InvoicePreview';
@@ -22,15 +22,28 @@ const App: React.FC = () => {
   const [isDark, setIsDark] = useState(() => localStorage.getItem('theme') === 'dark');
   const [isDownloading, setIsDownloading] = useState(false);
   const [lastSaved, setLastSaved] = useState<Date>(new Date());
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  // Surveillance de la connexion réseau
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
 
   // Protection contre la fermeture de l'onglet (Confirmation de départ)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // On affiche l'alerte si l'utilisateur a commencé à remplir la facture
-      // (par exemple s'il y a plus d'un item ou si le nom du client n'est plus par défaut)
       if (invoice.items.length > 0 || invoice.receiver.name !== 'Nom du Client') {
         e.preventDefault();
-        e.returnValue = ''; // Requis par Chrome
+        e.returnValue = '';
       }
     };
 
@@ -72,7 +85,7 @@ const App: React.FC = () => {
     };
 
     try {
-      // @ts-ignore - html2pdf is loaded from CDN in index.html
+      // @ts-ignore
       await html2pdf().from(element).set(opt).save();
     } catch (error) {
       console.error('PDF Generation failed:', error);
@@ -96,9 +109,16 @@ const App: React.FC = () => {
           <div className="bg-indigo-600 w-10 h-10 rounded-xl flex items-center justify-center shadow-lg shadow-indigo-100 dark:shadow-none">
             <FileText className="text-white w-6 h-6" />
           </div>
-          <div>
+          <div className="hidden xs:block">
             <h1 className="text-lg font-bold text-slate-900 dark:text-white leading-none">DevisFlow SN</h1>
-            <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase mt-1 tracking-wider">Facturation Professionnelle</p>
+            <div className="flex items-center gap-2 mt-1">
+               <p className="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">Facturation Pro</p>
+               {!isOnline && (
+                 <span className="flex items-center gap-1 text-[9px] bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-1.5 py-0.5 rounded font-black uppercase tracking-tighter animate-pulse">
+                   <WifiOff className="w-2.5 h-2.5" /> Hors-ligne
+                 </span>
+               )}
+            </div>
           </div>
         </div>
         
@@ -127,10 +147,11 @@ const App: React.FC = () => {
           <button 
             onClick={handleDownloadPDF} 
             disabled={isDownloading}
-            className="bg-slate-900 dark:bg-indigo-600 text-white px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-xl hover:bg-black dark:hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
+            className="bg-slate-900 dark:bg-indigo-600 text-white px-4 sm:px-6 py-2 rounded-xl text-sm font-bold flex items-center gap-2 shadow-xl hover:bg-black dark:hover:bg-indigo-500 active:scale-95 transition-all disabled:opacity-70 disabled:cursor-not-allowed"
           >
             {isDownloading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
-            {isDownloading ? 'Génération...' : 'Télécharger PDF'}
+            <span className="hidden sm:inline">{isDownloading ? 'Génération...' : 'Télécharger PDF'}</span>
+            <span className="sm:hidden">{isDownloading ? '...' : 'PDF'}</span>
           </button>
         </div>
       </header>
@@ -251,7 +272,7 @@ const App: React.FC = () => {
         </section>
       </main>
 
-      <ChatAssistant invoice={invoice} onInvoiceUpdate={(u) => setInvoice(prev => ({ ...prev, ...u }))} />
+      <ChatAssistant invoice={invoice} onInvoiceUpdate={(u) => setInvoice(prev => ({ ...prev, ...u }))} isOnline={isOnline} />
       
       {isDownloading && (
         <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-[2px] z-[200] flex items-center justify-center no-print">
